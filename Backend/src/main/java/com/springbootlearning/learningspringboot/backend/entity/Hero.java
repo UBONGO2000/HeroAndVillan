@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
- * Entité JPA représentant un Villain dans le système.
+ * Entité JPA représentant un Héros dans le système.
  * 
- * <p>Un villain est un antagoniste caractérisé par son nom, ses pouvoirs,
+ * <p>Un héros est un personnage positif caractérisé par son nom, ses pouvoirs,
  * son univers et son affiliation.</p>
  * 
  * @author Georges
@@ -25,144 +26,128 @@ import java.util.UUID;
  */
 @Data
 @Entity
-@Table(name = "villain")
+@Table(name = "hero")
 @AllArgsConstructor
 @NoArgsConstructor
 @Schema(
-    name = "Villain",
-    description = "Entité représentant un villain dans le système Heroes & Villains"
+    name = "Hero",
+    description = "Entité représentant un héros dans le système Heroes & Villains"
 )
-public class Villain {
+public class Hero {
 
     /**
-     * Identifiant unique du villain (UUID généré automatiquement).
+     * Identifiant unique du héros (UUID généré automatiquement).
      */
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(updatable = false, nullable = false)
     @Schema(
         name = "id",
-        description = "Identifiant unique du villain (UUID)",
+        description = "Identifiant unique du héros (UUID)",
         example = "550e8400-e29b-41d4-a716-446655440000",
         accessMode = Schema.AccessMode.READ_ONLY
     )
     private UUID id;
 
     /**
-     * Prénom du villain.
+     * Prénom du héros.
      */
+    @NotBlank(message = "First name is required")
+    @Column(nullable = false)
     @Schema(
         name = "firstName",
-        description = "Prénom du villain",
-        example = "Tom",
+        description = "Prénom du héros",
+        example = "Peter",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String firstName;
 
     /**
-     * Nom de famille du villain.
+     * Nom de famille du héros.
      */
+    @NotBlank(message = "Last name is required")
+    @Column(nullable = false)
     @Schema(
         name = "lastName",
-        description = "Nom de famille du villain",
-        example = "Riddle",
+        description = "Nom de famille du héros",
+        example = "Parker",
         requiredMode = Schema.RequiredMode.REQUIRED
     )
     private String lastName;
 
     /**
-     * Nom de super-villain (identité secrète).
+     * Nom de super-héros (identité secrète).
      */
     @Schema(
-        name = "villainName",
-        description = "Nom de super-villain (identité secrète)",
-        example = "Lord Voldemort"
+        name = "heroName",
+        description = "Nom de super-héros (identité secrète)",
+        example = "Spider-Man"
     )
-    private String villainName;
+    private String heroName;
 
     /**
-     * Maison à laquelle appartient le villain.
-     */
-    @Schema(
-        name = "house",
-        description = "Maison ou affiliation du villain",
-        example = "Slytherin"
-    )
-    private String house;
-
-    /**
-     * Surnom ou alias du villain.
-     */
-    @Schema(
-        name = "knownAs",
-        description = "Surnom ou alias par lequel le villain est connu",
-        example = "He-Who-Must-Not-Be-Named"
-    )
-    private String knownAs;
-
-    /**
-     * Pouvoir(s) du villain.
+     * Pouvoir(s) du héros.
      */
     @Schema(
         name = "power",
-        description = "Pouvoir(s) du villain",
-        example = "Magie noire, Legilimencie, Immortalité"
+        description = "Pouvoir(s) du héros",
+        example = "Super force, agilité, sens araignée, lance-toiles"
     )
     private String power;
 
     /**
-     * Affiliation du villain (organisation).
+     * Affiliation du héros (équipe).
      */
     @Schema(
         name = "affiliation",
-        description = "Affiliation ou organisation du villain",
-        example = "Death Eaters"
+        description = "Affiliation ou équipe du héros",
+        example = "Avengers"
     )
     private String affiliation;
 
     /**
-     * Catégorie/Univers du villain.
+     * Catégorie/Univers du héros.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @Schema(
         name = "category",
-        description = "Catégorie/Univers du villain"
+        description = "Catégorie/Univers du héros"
     )
     private Category category;
 
     /**
-     * Note moyenne du villain (0.0 à 5.0).
+     * Note moyenne du héros (0.0 à 5.0).
      */
     @DecimalMin(value = "0.0", message = "Rating must be at least 0.0")
     @DecimalMax(value = "5.0", message = "Rating must be at most 5.0")
     @Column(precision = 2, scale = 1)
     @Schema(
         name = "rating",
-        description = "Note moyenne du villain (0.0 à 5.0)",
-        example = "4.8",
+        description = "Note moyenne du héros (0.0 à 5.0)",
+        example = "4.5",
         minimum = "0.0",
         maximum = "5.0"
     )
     private BigDecimal rating;
 
     /**
-     * URL de l'image du villain.
+     * URL de l'image du héros.
      */
     @Schema(
         name = "imageUrl",
-        description = "URL de l'image du villain",
-        example = "https://example.com/images/voldemort.jpg"
+        description = "URL de l'image du héros",
+        example = "https://example.com/images/spiderman.jpg"
     )
     private String imageUrl;
 
     /**
-     * Biographie du villain.
+     * Biographie du héros.
      */
     @Schema(
         name = "biography",
-        description = "Biographie ou histoire du villain",
-        example = "Tom Elvis Jedusor, plus connu sous le nom de Lord Voldemort..."
+        description = "Biographie ou histoire du héros",
+        example = "Mordu par une araignée radioactive, Peter Parker a acquis des pouvoirs extraordinaires..."
     )
     @Column(columnDefinition = "TEXT")
     private String biography;
