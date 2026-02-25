@@ -8,14 +8,15 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BlogDto {
-    
-    @NotBlank(message = "Title is required")
-    private String title;
+public class AntiHeroDto {
 
-    @NotBlank(message = "Body is required")
-    private String body;
+    @NotBlank(message = "First Name is required")
+    private String firstname;
 
-    @NotBlank(message = "Author is required")
-    private String author;
+    @NotBlank(message = "Last Name is required")
+    private String lastname;
+
+    private String house;
+
+    private String knownAs;
 }

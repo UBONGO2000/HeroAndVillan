@@ -8,5 +8,5 @@ import java.util.UUID;
 
 
 @Repository
-public interface VillanRepository extends JpaRepository<Villain, UUID> {
+public interface VillainRepository extends JpaRepository<Villain, UUID> {
 }

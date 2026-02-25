@@ -6,30 +6,38 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Entity
-@Table(name = "villain")
-@AllArgsConstructor
+@Table(name = "anti_hero")
 @NoArgsConstructor
-public class Villain {
+@AllArgsConstructor
+public class AntiHero {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(updatable = false, nullable = false)
     private UUID id;
 
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "First Name is required")
     @Column(nullable = false)
-    private String firstName;
+    private String firstname;
 
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "Last Name is required")
     @Column(nullable = false)
-    private String lastName;
+    private String lastname;
 
     private String house;
 
     private String knownAs;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
 }
