@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Heroes & Villains - Gestion des personnages">
+    <title th:text="${pageTitle} ?: 'Heroes & Villains'">Heroes & Villains</title>
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    
+    <!-- Page-specific styles -->
+    <th:block th:replace="${pageStyles} ?: _"></th:block>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/" class="sidebar-brand">
+                    <i class="fas fa-mask"></i>
+                    <span>Heroes & Villains</span>
+                </a>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <!-- Characters Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Personnages</div>
+                    <a href="/heroes" class="nav-link" th:classappend="${currentPage == 'heroes'} ? 'active'">
+                        <i class="fas fa-mask" style="color: #3b82f6;"></i>
+                        <span>Héros</span>
+                    </a>
+                    <a href="/villains" class="nav-link" th:classappend="${currentPage == 'villains'} ? 'active'">
+                        <i class="fas fa-skull" style="color: #ef4444;"></i>
+                        <span>Vilains</span>
+                    </a>
+                    <a href="/anti-heroes" class="nav-link" th:classappend="${currentPage == 'antiheroes'} ? 'active'">
+                        <i class="fas fa-user-secret" style="color: #8b5cf6;"></i>
+                        <span>Anti-Héros</span>
+                    </a>
+                </div>
+                
+                <!-- Organization Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Organisation</div>
+                    <a href="/categories" class="nav-link" th:classappend="${currentPage == 'categories'} ? 'active'">
+                        <i class="fas fa-folder"></i>
+                        <span>Catégories</span>
+                    </a>
+                </div>
+                
+                <!-- Content Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Contenu</div>
+                    <a href="/blogs" class="nav-link" th:classappend="${currentPage == 'blogs'} ? 'active'">
+                        <i class="fas fa-newspaper"></i>
+                        <span>Blog</span>
+                    </a>
+                </div>
+                
+                <!-- API Section -->
+                <div class="nav-section">
+                    <div class="nav-section-title">Développement</div>
+                    <a href="/swagger-ui.html" class="nav-link" target="_blank">
+                        <i class="fas fa-code"></i>
+                        <span>API Documentation</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <button class="btn btn-secondary d-lg-none" id="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                
+                <div class="header-search d-none d-md-block">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Rechercher un personnage...">
+                    <div id="search-results" class="position-absolute bg-white rounded shadow-lg mt-1" style="display: none; width: 100%; max-height: 300px; overflow-y: auto;"></div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="btn btn-secondary" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <button class="btn btn-secondary" title="Profil">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="content-area">
+                <th:block th:replace="${content}">
+                    <!-- Page content goes here -->
+                </th:block>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
+    <!-- Main JavaScript -->
+    <script th:src="@{/js/app.js}"></script>
+    
+    <!-- Page-specific scripts -->
+    <th:block th:replace="${pageScripts} ?: _"></th:block>
+</body>
+</html>

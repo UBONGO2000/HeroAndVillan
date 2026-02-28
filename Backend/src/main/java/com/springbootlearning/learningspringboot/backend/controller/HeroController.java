@@ -1,7 +1,6 @@
 package com.springbootlearning.learningspringboot.backend.controller;
 
 import com.springbootlearning.learningspringboot.backend.dto.HeroDto;
-import com.springbootlearning.learningspringboot.backend.entity.Hero;
 import com.springbootlearning.learningspringboot.backend.service.HeroService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -11,10 +10,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -39,21 +42,42 @@ public class HeroController {
     }
 
     /**
-     * Récupère tous les héros.
+     * Récupère tous les héros avec pagination.
      * 
-     * @return un Iterable de tous les héros
+     * @param pageable les informations de pagination (page, size, sort)
+     * @return une page de héros
      */
-    @Operation(summary = "Récupérer tous les héros", 
-               description = "Retourne la liste de tous les héros")
+    @Operation(summary = "Récupérer tous les héros (paginé)", 
+               description = "Retourne la liste paginée de tous les héros")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Liste des héros récupérée avec succès",
                      content = @Content(mediaType = "application/json", 
-                     schema = @Schema(implementation = Hero.class)))
+                     schema = @Schema(implementation = HeroDto.class)))
     })
     @GetMapping
-    public ResponseEntity<Iterable<Hero>> getAllHeroes() {
-        Iterable<Hero> heroes = heroService.findAllHeroes();
-        return new ResponseEntity<>(heroes, HttpStatus.OK);
+    public ResponseEntity<Page<HeroDto>> getAllHeroes(
+            @Parameter(description = "Paramètres de pagination (page, size, sort)")
+            @PageableDefault(size = 10, sort = "firstName") Pageable pageable) {
+        Page<HeroDto> heroes = heroService.findAllHeroes(pageable);
+        return ResponseEntity.ok(heroes);
+    }
+
+    /**
+     * Récupère tous les héros sans pagination (pour compatibilité).
+     * 
+     * @return la liste de tous les héros
+     */
+    @Operation(summary = "Récupérer tous les héros (liste complète)", 
+               description = "Retourne la liste complète de tous les héros")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liste des héros récupérée avec succès",
+                     content = @Content(mediaType = "application/json", 
+                     schema = @Schema(implementation = HeroDto.class)))
+    })
+    @GetMapping("/all")
+    public ResponseEntity<List<HeroDto>> getAllHeroesList() {
+        List<HeroDto> heroes = heroService.findAllHeroes();
+        return ResponseEntity.ok(heroes);
     }
 
     /**
@@ -67,16 +91,16 @@ public class HeroController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Héros trouvé",
                      content = @Content(mediaType = "application/json", 
-                     schema = @Schema(implementation = Hero.class))),
+                     schema = @Schema(implementation = HeroDto.class))),
         @ApiResponse(responseCode = "404", description = "Héros non trouvé", 
                      content = @Content)
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Hero> getHeroById(
+    public ResponseEntity<HeroDto> getHeroById(
             @Parameter(description = "UUID du héros à récupérer") 
             @PathVariable UUID id) {
-        Hero hero = heroService.findHeroById(id);
-        return new ResponseEntity<>(hero, HttpStatus.OK);
+        HeroDto hero = heroService.findHeroById(id);
+        return ResponseEntity.ok(hero);
     }
 
     /**
@@ -90,17 +114,17 @@ public class HeroController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Héros créé avec succès",
                      content = @Content(mediaType = "application/json", 
-                     schema = @Schema(implementation = Hero.class))),
+                     schema = @Schema(implementation = HeroDto.class))),
         @ApiResponse(responseCode = "400", description = "Données invalides", 
                      content = @Content),
         @ApiResponse(responseCode = "404", description = "Catégorie non trouvée", 
                      content = @Content)
     })
     @PostMapping
-    public ResponseEntity<Hero> createHero(
+    public ResponseEntity<HeroDto> createHero(
             @Parameter(description = "Données du héros à créer") 
             @Valid @RequestBody HeroDto heroDto) {
-        Hero hero = heroService.createHero(heroDto);
+        HeroDto hero = heroService.createHero(heroDto);
         return new ResponseEntity<>(hero, HttpStatus.CREATED);
     }
 
@@ -116,20 +140,20 @@ public class HeroController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Héros mis à jour avec succès",
                      content = @Content(mediaType = "application/json", 
-                     schema = @Schema(implementation = Hero.class))),
+                     schema = @Schema(implementation = HeroDto.class))),
         @ApiResponse(responseCode = "404", description = "Héros ou catégorie non trouvé", 
                      content = @Content),
         @ApiResponse(responseCode = "400", description = "Données invalides", 
                      content = @Content)
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Hero> updateHero(
+    public ResponseEntity<HeroDto> updateHero(
             @Parameter(description = "UUID du héros à mettre à jour") 
             @PathVariable UUID id,
             @Parameter(description = "Nouvelles données du héros") 
             @Valid @RequestBody HeroDto heroDto) {
-        Hero hero = heroService.updateHero(id, heroDto);
-        return new ResponseEntity<>(hero, HttpStatus.OK);
+        HeroDto hero = heroService.updateHero(id, heroDto);
+        return ResponseEntity.ok(hero);
     }
 
     /**
@@ -150,6 +174,27 @@ public class HeroController {
             @Parameter(description = "UUID du héros à supprimer") 
             @PathVariable UUID id) {
         heroService.removeHeroById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Recherche des héros par catégorie.
+     * 
+     * @param categoryId l'identifiant de la catégorie
+     * @return la liste des héros de cette catégorie
+     */
+    @Operation(summary = "Récupérer les héros par catégorie", 
+               description = "Retourne tous les héros appartenant à une catégorie donnée")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Liste des héros récupérée avec succès",
+                     content = @Content(mediaType = "application/json", 
+                     schema = @Schema(implementation = HeroDto.class)))
+    })
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<HeroDto>> getHeroesByCategory(
+            @Parameter(description = "UUID de la catégorie") 
+            @PathVariable UUID categoryId) {
+        List<HeroDto> heroes = heroService.findHeroesByCategory(categoryId);
+        return ResponseEntity.ok(heroes);
     }
 }

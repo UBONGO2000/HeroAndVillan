@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anti-Hero Detail - CMMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            margin-bottom: 40px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .sidebar {
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            color: #495057;
+            font-weight: 500;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover {
+            background: #e9ecef;
+            color: #007bff;
+        }
+        .sidebar .nav-link.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .content {
+            padding: 20px;
+        }
+        .page-title {
+            color: #343a40;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .stat-card .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 40px 0;
+            }
+            .sidebar {
+                min-height: auto;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex">
+        <div class="sidebar col-md-2">
+            <div class="d-flex flex-column">
+                <a href="/" class="text-center mb-4">
+                    <h3 class="text-primary">CMMS</h3>
+                </a>
+                <nav class="nav flex-column">
+                    <a class="nav-link" href="/">
+                        <i class="fas fa-home"></i> Accueil
+                    </a>
+                    <a class="nav-link" href="/heroes">
+                        <i class="fas fa-users"></i> Heros
+                    </a>
+                    <a class="nav-link" href="/villains">
+                        <i class="fas fa-user-tie"></i> Villains
+                    </a>
+                    <a class="nav-link active" href="/anti-heroes">
+                        <i class="fas fa-user-shield"></i> Anti-Heros
+                    </a>
+                    <a class="nav-link" href="/categories">
+                        <i class="fas fa-tags"></i> Categories
+                    </a>
+                    <a class="nav-link" href="/blogs">
+                        <i class="fas fa-blog"></i> Blogs
+                    </a>
+                </nav>
+            </div>
+        </div>
+        <div class="flex-grow-1">
+            <div class="hero-section">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h1 class="display-4 fw-bold">Anti-Hero Detail</h1>
+                            <p class="lead">Informations détaillées de l'anti-hero</p>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <p class="text-white-50">Accédez à toutes les informations de l'anti-hero</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="content container">
+                <div class="row">
+                    <div class="col-lg-10 offset-lg-1">
+                        <h2 class="page-title">[[${antiHero.antiHeroName}]]</h2>
+                        
+                        <!-- Anti-Hero Detail -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title">Informations générales</h5>
+                                <p class="card-text" th:text="${antiHero.antiHeroDescription}">Anti-Hero description</p>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        Créé le <span th:text="${#dates.format(antiHero.createdAt, 'dd/MM/yyyy')}">01/01/2023</span>
+                                        <br>
+                                        Mis à jour le <span th:text="${#dates.format(antiHero.updatedAt, 'dd/MM/yyyy')}">01/01/2023</span>
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mb-4">
+                            <a href="/anti-heroes" class="btn btn-primary">Retour à la liste</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    </script>
+</body>
+</html>

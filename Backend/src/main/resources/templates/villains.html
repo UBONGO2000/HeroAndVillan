@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{base :: layout(
+          pageTitle = 'Vilains - Heroes & Villains',
+          currentPage = 'villains',
+          content = ~{::content},
+          pageStyles = ~{::styles},
+          pageScripts = ~{::scripts}
+      )}">
+<head>
+    <th:block th:fragment="styles">
+        <style>
+            .page-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-6);
+            }
+            
+            .page-title {
+                font-size: var(--text-2xl);
+                font-weight: 700;
+                color: var(--gray-800);
+            }
+            
+            .filter-bar {
+                background: white;
+                border-radius: var(--radius-lg);
+                padding: var(--space-4);
+                margin-bottom: var(--space-5);
+                box-shadow: var(--shadow);
+                display: flex;
+                gap: var(--space-4);
+                flex-wrap: wrap;
+                align-items: center;
+            }
+            
+            .characters-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: var(--space-5);
+            }
+            
+            .villain-card {
+                position: relative;
+                background: white;
+                border-radius: var(--radius-xl);
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                transition: all var(--transition-base);
+                border-top: 4px solid var(--villain-color);
+            }
+            
+            .villain-card:hover {
+                transform: translateY(-8px);
+                box-shadow: var(--shadow-2xl);
+            }
+            
+            .villain-image {
+                height: 200px;
+                background: linear-gradient(135deg, #fee2e2, #fecaca);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: var(--text-5xl);
+                color: var(--villain-color);
+            }
+            
+            .villain-type {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-1);
+                padding: var(--space-1) var(--space-3);
+                border-radius: var(--radius-full);
+                font-size: var(--text-xs);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                background: #fee2e2;
+                color: #991b1b;
+            }
+            
+            .character-actions {
+                display: flex;
+                gap: var(--space-2);
+                margin-top: var(--space-4);
+                padding-top: var(--space-4);
+                border-top: 1px solid var(--gray-100);
+            }
+            
+            .threat-level {
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-1);
+            }
+            
+            .threat-level .dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+            }
+            
+            .threat-low { background: var(--success-500); }
+            .threat-medium { background: var(--warning-500); }
+            .threat-high { background: var(--error-500); }
+            .threat-critical { background: #7c2d12; }
+        </style>
+    </th:block>
+</head>
+<body>
+    <th:block th:fragment="content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="fas fa-skull text-danger me-2"></i>
+                    Les Vilains
+                </h1>
+                <p class="text-gray-500 mt-1" th:text="${villains != null} ? ${villains.size()} + ' vilains trouvés' : '0 vilains'">0 vilains</p>
+            </div>
+            <a href="/villains/new" class="btn btn-danger btn-lg">
+                <i class="fas fa-plus me-2"></i>
+                Nouveau Vilain
+            </a>
+        </div>
+        
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="form-group mb-0" style="flex: 1; max-width: 300px;">
+                <div class="position-relative">
+                    <i class="fas fa-search position-absolute" style="left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400);"></i>
+                    <input type="text" id="villain-search" class="form-control" placeholder="Rechercher un vilain..." style="padding-left: 40px;">
+                </div>
+            </div>
+            
+            <select class="form-control mb-0" style="width: 200px;">
+                <option value="">Toutes les catégories</option>
+                <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}">Catégorie</option>
+            </select>
+            
+            <select class="form-control mb-0" style="width: 180px;">
+                <option value="">Niveau de menace</option>
+                <option value="low">Faible</option>
+                <option value="medium">Moyen</option>
+                <option value="high">Élevé</option>
+                <option value="critical">Critique</option>
+            </select>
+        </div>
+        
+        <!-- Villains Grid -->
+        <div class="characters-grid" th:if="${villains != null and !villains.isEmpty()}">
+            <div th:each="villain : ${villains}" class="villain-card">
+                <div class="villain-image">
+                    <i class="fas fa-skull"></i>
+                </div>
+                <div class="character-content">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <span class="villain-type">
+                            <i class="fas fa-skull"></i> Vilain
+                        </span>
+                        <span class="threat-level" th:if="${villain.threatLevel != null}">
+                            <span class="dot" th:classappend="'
+                                threat-' + ${villain.threatLevel.toString().toLowerCase()}"></span>
+                            <span class="text-sm text-gray-500" th:text="${villain.threatLevel}">HIGH</span>
+                        </span>
+                    </div>
+                    
+                    <h3 class="character-name" th:text="${villain.villainName}">Nom du Vilain</h3>
+                    
+                    <p class="character-description" th:text="${villain.power} ?: 'Aucun pouvoir spécifié'">
+                        Description du pouvoir...
+                    </p>
+                    
+                    <div class="d-flex align-items-center gap-3 mt-3">
+                        <span class="badge badge-error" th:if="${villain.affiliation}" th:text="${villain.affiliation}">
+                            Organisation
+                        </span>
+                    </div>
+                    
+                    <div class="character-actions">
+                        <a th:href="@{/villains/{id}(id=${villain.id})}" class="btn btn-primary flex-fill">
+                            <i class="fas fa-eye me-1"></i> Voir
+                        </a>
+                        <a th:href="@{/villains/{id}/edit(id=${villain.id})}" class="btn btn-secondary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <button class="btn btn-danger" 
+                                th:data-delete="${villain.villainName}"
+                                th:data-url="@{/api/villains/{id}(id=${villain.id})}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${villains == null or villains.isEmpty()}">
+            <div class="empty-state-icon">
+                <i class="fas fa-skull"></i>
+            </div>
+            <h3>Aucun vilain trouvé</h3>
+            <p>Commencez par ajouter votre premier vilain à la collection.</p>
+            <a href="/villains/new" class="btn btn-danger btn-lg">
+                <i class="fas fa-plus me-2"></i>
+                Ajouter un Vilain
+            </a>
+        </div>
+        
+        <!-- Pagination -->
+        <nav class="mt-5" th:if="${totalPages != null and totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/villains(page=${currentPage - 1})}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                    th:classappend="${i == currentPage} ? 'active'">
+                    <a class="page-link" th:href="@{/villains(page=${i})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                    <a class="page-link" th:href="@{/villains(page=${currentPage + 1})}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </th:block>
+    
+    <th:block th:fragment="scripts">
+        <script>
+            // Client-side search filtering
+            document.getElementById('villain-search')?.addEventListener('input', debounce(function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const cards = document.querySelectorAll('.villain-card');
+                
+                cards.forEach(card => {
+                    const name = card.querySelector('.character-name').textContent.toLowerCase();
+                    const description = card.querySelector('.character-description').textContent.toLowerCase();
+                    
+                    if (name.includes(searchTerm) || description.includes(searchTerm)) {
+                        card.style.display = '';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }, 300));
+        </script>
+    </th:block>
+</body>
+</html>

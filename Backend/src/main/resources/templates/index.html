@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org" 
+      th:replace="~{base :: layout(
+          pageTitle = 'Accueil - Heroes & Villains',
+          currentPage = 'home',
+          content = ~{::content},
+          pageStyles = ~{::styles},
+          pageScripts = ~{::scripts}
+      )}">
+<head>
+    <th:block th:fragment="styles">
+        <style>
+            .quick-actions {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: var(--space-5);
+                margin-top: var(--space-6);
+            }
+            
+            .quick-action-card {
+                background: white;
+                border-radius: var(--radius-xl);
+                padding: var(--space-6);
+                box-shadow: var(--shadow);
+                border: 1px solid var(--gray-100);
+                transition: all var(--transition-base);
+                cursor: pointer;
+            }
+            
+            .quick-action-card:hover {
+                box-shadow: var(--shadow-xl);
+                transform: translateY(-4px);
+            }
+            
+            .quick-action-icon {
+                width: 64px;
+                height: 64px;
+                border-radius: var(--radius-lg);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: var(--text-2xl);
+                margin-bottom: var(--space-4);
+            }
+            
+            .recent-activity {
+                margin-top: var(--space-6);
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <th:block th:fragment="content">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content text-center">
+                <h1 class="hero-title">Gérez vos Héros & Vilains</h1>
+                <p class="hero-subtitle mx-auto">
+                    Une plateforme complète pour gérer votre univers de personnages. 
+                    Organisez, classez et suivez tous vos héros, vilains et anti-héros en un seul endroit.
+                </p>
+                <div class="mt-5">
+                    <a href="/heroes" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-mask me-2"></i>Voir les Héros
+                    </a>
+                    <a href="/villains" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-skull me-2"></i>Voir les Vilains
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <i class="fas fa-mask"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${heroCount} ?: '0'">0</h3>
+                    <p>Héros</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon red">
+                    <i class="fas fa-skull"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${villainCount} ?: '0'">0</h3>
+                    <p>Vilains</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <i class="fas fa-user-secret"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${antiHeroCount} ?: '0'">0</h3>
+                    <p>Anti-Héros</p>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 th:text="${categoryCount} ?: '0'">0</h3>
+                    <p>Catégories</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fas fa-bolt text-warning me-2"></i>
+                    Actions Rapides
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="quick-actions">
+                    <a href="/heroes/new" class="quick-action-card text-decoration-none">
+                        <div class="quick-action-icon" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e40af;">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h4 class="mb-2">Nouveau Héros</h4>
+                        <p class="text-gray-500 mb-0">Ajouter un nouveau héros à la collection</p>
+                    </a>
+                    
+                    <a href="/villains/new" class="quick-action-card text-decoration-none">
+                        <div class="quick-action-icon" style="background: linear-gradient(135deg, #fee2e2, #fecaca); color: #991b1b;">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h4 class="mb-2">Nouveau Vilain</h4>
+                        <p class="text-gray-500 mb-0">Ajouter un nouveau vilain à la collection</p>
+                    </a>
+                    
+                    <a href="/categories" class="quick-action-card text-decoration-none">
+                        <div class="quick-action-icon" style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); color: #065f46;">
+                            <i class="fas fa-folder-plus"></i>
+                        </div>
+                        <h4 class="mb-2">Gérer les Catégories</h4>
+                        <p class="text-gray-500 mb-0">Organiser les personnages par catégorie</p>
+                    </a>
+                    
+                    <a href="/blogs/new" class="quick-action-card text-decoration-none">
+                        <div class="quick-action-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a); color: #92400e;">
+                            <i class="fas fa-pen"></i>
+                        </div>
+                        <h4 class="mb-2">Nouvel Article</h4>
+                        <p class="text-gray-500 mb-0">Rédiger un article pour le blog</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Featured Characters Section -->
+        <div class="mt-6" th:if="${featuredHeroes != null and !featuredHeroes.isEmpty()}">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="page-title mb-0">Héros en Vedette</h2>
+                <a href="/heroes" class="btn btn-secondary">Voir tout</a>
+            </div>
+            
+            <div class="grid grid-cols-4">
+                <div th:each="hero : ${featuredHeroes}" class="character-card hero">
+                    <div class="character-image">
+                        <i class="fas fa-mask" style="color: var(--hero-color);"></i>
+                    </div>
+                    <div class="character-content">
+                        <span class="character-type hero">
+                            <i class="fas fa-mask"></i> Héros
+                        </span>
+                        <h3 class="character-name" th:text="${hero.heroName}">Nom du Héros</h3>
+                        <p class="character-description" th:text="${hero.power}">Description du pouvoir...</p>
+                        <div class="mt-3">
+                            <span class="badge badge-info" th:text="${hero.affiliation}">Affiliation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="recent-activity" th:if="${recentBlogs != null and !recentBlogs.isEmpty()}">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        Articles Récents
+                    </h2>
+                    <a href="/blogs" class="btn btn-secondary btn-sm">Voir tout</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-container">
+                        <table class="data-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Auteur</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="blog : ${recentBlogs}">
+                                    <td>
+                                        <div class="font-semibold" th:text="${blog.title}">Titre</div>
+                                    </td>
+                                    <td th:text="${blog.author}">Auteur</td>
+                                    <td th:text="${#temporals.format(blog.createdAt, 'dd/MM/yyyy')}">Date</td>
+                                    <td>
+                                        <a th:href="@{/blogs/{id}(id=${blog.id})}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </th:block>
+    
+    <th:block th:fragment="scripts">
+        <script>
+            // Animate stats on page load
+            document.addEventListener('DOMContentLoaded', () => {
+                const statNumbers = document.querySelectorAll('.stat-info h3');
+                statNumbers.forEach(stat => {
+                    const finalValue = parseInt(stat.textContent);
+                    if (finalValue > 0) {
+                        animateNumber(stat, 0, finalValue, 1000);
+                    }
+                });
+            });
+            
+            function animateNumber(element, start, end, duration) {
+                const range = end - start;
+                const minTimer = 50;
+                let stepTime = Math.abs(Math.floor(duration / range));
+                stepTime = Math.max(stepTime, minTimer);
+                
+                let startTime = new Date().getTime();
+                let endTime = startTime + duration;
+                let timer;
+                
+                function run() {
+                    let now = new Date().getTime();
+                    let remaining = Math.max((endTime - now) / duration, 0);
+                    let value = Math.round(end - (remaining * range));
+                    element.textContent = value;
+                    if (value == end) {
+                        clearInterval(timer);
+                    }
+                }
+                
+                timer = setInterval(run, stepTime);
+                run();
+            }
+        </script>
+    </th:block>
+</body>
+</html>

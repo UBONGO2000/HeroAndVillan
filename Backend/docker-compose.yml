@@ -1,0 +1,72 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: heroDB
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d heroDB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    ports:
+      - "8080:8080"
+    environment:
+      # Profile
+      SPRING_PROFILES_ACTIVE: dev
+      
+      # Database Configuration
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/heroDB
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      
+      # JWT Configuration
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleTIwMjRFbmhhbmNlZFNlY3VyaXR5S2V5MTIzNDU2Nzg5MA==}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      
+      # Server Configuration
+      SERVER_PORT: 8080
+      
+      # Logging
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+      LOGGING_LEVEL_COM_SPRINGBOOTLEARNING: DEBUG
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    # Resource limits (optional but recommended)
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  postgres-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

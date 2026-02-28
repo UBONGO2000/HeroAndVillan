@@ -4,13 +4,21 @@ import com.springbootlearning.learningspringboot.backend.dto.HeroDto;
 import com.springbootlearning.learningspringboot.backend.entity.Category;
 import com.springbootlearning.learningspringboot.backend.entity.Hero;
 import com.springbootlearning.learningspringboot.backend.exception.NotFoundException;
+import com.springbootlearning.learningspringboot.backend.mapper.HeroMapper;
 import com.springbootlearning.learningspringboot.backend.repository.CategoryRepository;
 import com.springbootlearning.learningspringboot.backend.repository.HeroRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -24,37 +32,59 @@ import java.util.UUID;
  * @since 1.0.0
  */
 @Service
+@CacheConfig(cacheNames = "heroes")
 public class HeroService {
 
     private static final Logger logger = LoggerFactory.getLogger(HeroService.class);
     private final HeroRepository heroRepository;
     private final CategoryRepository categoryRepository;
+    private final HeroMapper heroMapper;
 
-    public HeroService(HeroRepository heroRepository, CategoryRepository categoryRepository) {
+    public HeroService(HeroRepository heroRepository, CategoryRepository categoryRepository, HeroMapper heroMapper) {
         this.heroRepository = heroRepository;
         this.categoryRepository = categoryRepository;
+        this.heroMapper = heroMapper;
     }
 
     /**
-     * Récupère tous les héros.
+     * Récupère tous les héros avec pagination.
      * 
-     * @return un Iterable de tous les héros
+     * @param pageable les informations de pagination
+     * @return une page de DTOs de héros
      */
-    public Iterable<Hero> findAllHeroes() {
-        return heroRepository.findAll();
+    @Cacheable(key = "'page_' + #pageable.pageNumber + '_' + #pageable.pageSize")
+    public Page<HeroDto> findAllHeroes(Pageable pageable) {
+        logger.info("Fetching heroes page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
+        Page<Hero> heroes = heroRepository.findAll(pageable);
+        return heroes.map(heroMapper::toDto);
+    }
+
+    /**
+     * Récupère tous les héros sans pagination (pour compatibilité).
+     * 
+     * @return une liste de DTOs de tous les héros
+     */
+    @Cacheable(key = "'all'")
+    public List<HeroDto> findAllHeroes() {
+        logger.info("Fetching all heroes");
+        List<Hero> heroes = heroRepository.findAll();
+        return heroMapper.toDtoList(heroes);
     }
 
     /**
      * Récupère un héros par son identifiant.
      * 
      * @param id l'identifiant du héros
-     * @return le héros trouvé
+     * @return le DTO du héros trouvé
      * @throws NotFoundException si le héros n'est pas trouvé
      */
-    public Hero findHeroById(UUID id) {
-        return heroRepository.findById(id).orElseThrow(
+    @Cacheable(key = "#id")
+    public HeroDto findHeroById(UUID id) {
+        logger.info("Fetching hero with id: {}", id);
+        Hero hero = heroRepository.findById(id).orElseThrow(
                 () -> new NotFoundException("Hero by id " + id + " was not found")
         );
+        return heroMapper.toDto(hero);
     }
 
     /**
@@ -62,8 +92,10 @@ public class HeroService {
      * 
      * @param id l'identifiant du héros à supprimer
      */
+    @CacheEvict(key = "#id")
     @Transactional
     public void removeHeroById(UUID id) {
+        logger.info("Deleting hero with id: {}", id);
         heroRepository.deleteById(id);
         logger.info("Hero deleted successfully with id: {}", id);
     }
@@ -72,18 +104,26 @@ public class HeroService {
      * Crée un nouveau héros.
      * 
      * @param heroDto les données du héros à créer
-     * @return le héros créé
+     * @return le DTO du héros créé
      * @throws NotFoundException si la catégorie spécifiée n'existe pas
      */
+    @CachePut(key = "#result.id")
+    @CacheEvict(key = "'all'", allEntries = true)
     @Transactional
-    public Hero createHero(HeroDto heroDto) {
-        Hero hero = new Hero();
-
-        updateHeroFromDto(hero, heroDto);
-
+    public HeroDto createHero(HeroDto heroDto) {
+        logger.info("Creating new hero: {}", heroDto.getHeroName());
+        Hero hero = heroMapper.toEntity(heroDto);
+        
+        // Set category if provided
+        if (heroDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(heroDto.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Category not found with id: " + heroDto.getCategoryId()));
+            hero.setCategory(category);
+        }
+        
         Hero savedHero = heroRepository.save(hero);
         logger.info("Hero created successfully with id: {}", savedHero.getId());
-        return savedHero;
+        return heroMapper.toDto(savedHero);
     }
 
     /**
@@ -91,40 +131,41 @@ public class HeroService {
      * 
      * @param id l'identifiant du héros à mettre à jour
      * @param heroDto les nouvelles données du héros
-     * @return le héros mis à jour
+     * @return le DTO du héros mis à jour
      * @throws NotFoundException si le héros ou la catégorie n'est pas trouvé
      */
+    @CachePut(key = "#id")
+    @CacheEvict(key = "'all'", allEntries = true)
     @Transactional
-    public Hero updateHero(UUID id, HeroDto heroDto) {
-        Hero hero = findHeroById(id);
+    public HeroDto updateHero(UUID id, HeroDto heroDto) {
+        logger.info("Updating hero with id: {}", id);
+        Hero hero = heroRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("Hero by id " + id + " was not found")
+        );
 
-        updateHeroFromDto(hero, heroDto);
+        heroMapper.updateEntityFromDto(heroDto, hero);
+        
+        // Update category if provided
+        if (heroDto.getCategoryId() != null) {
+            Category category = categoryRepository.findById(heroDto.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Category not found with id: " + heroDto.getCategoryId()));
+            hero.setCategory(category);
+        }
 
         Hero updatedHero = heroRepository.save(hero);
         logger.info("Hero updated successfully with id: {}", updatedHero.getId());
-        return updatedHero;
+        return heroMapper.toDto(updatedHero);
     }
 
     /**
-     * Met à jour les propriétés d'un héros à partir du DTO.
+     * Recherche des héros par catégorie.
      * 
-     * @param hero le héros à mettre à jour
-     * @param heroDto les données source
+     * @param categoryId l'identifiant de la catégorie
+     * @return la liste des DTOs de héros de cette catégorie
      */
-    private void updateHeroFromDto(Hero hero, HeroDto heroDto) {
-        hero.setFirstName(heroDto.getFirstName());
-        hero.setLastName(heroDto.getLastName());
-        hero.setHeroName(heroDto.getHeroName());
-        hero.setPower(heroDto.getPower());
-        hero.setAffiliation(heroDto.getAffiliation());
-        hero.setRating(heroDto.getRating());
-        hero.setImageUrl(heroDto.getImageUrl());
-        hero.setBiography(heroDto.getBiography());
-
-        if (heroDto.getCategoryId() != null) {
-            Category category = categoryRepository.findById(heroDto.getCategoryId())
-                    .orElseThrow(() -> new NotFoundException("Category by id " + heroDto.getCategoryId() + " was not found"));
-            hero.setCategory(category);
-        }
+    public List<HeroDto> findHeroesByCategory(UUID categoryId) {
+        logger.info("Fetching heroes by category id: {}", categoryId);
+        List<Hero> heroes = heroRepository.findByCategoryId(categoryId);
+        return heroMapper.toDtoList(heroes);
     }
 }

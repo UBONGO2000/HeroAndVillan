@@ -64,14 +64,12 @@ public class AntiHero {
     /**
      * Nom de famille de l'anti-héros.
      */
-    @NotBlank(message = "Last name is required")
-    @Column(nullable = false)
     @Schema(
         name = "lastName",
         description = "Nom de famille de l'anti-héros",
-        example = "Wilson",
-        requiredMode = Schema.RequiredMode.REQUIRED
+        example = "Wilson"
     )
+    @Column(nullable = true)
     private String lastName;
 
     /**
